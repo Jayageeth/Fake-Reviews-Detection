@@ -1,2 +1,3 @@
 venv
 *.sav
+__pycache__

@@ -4,7 +4,7 @@ import numpy as np
 import math
 import pickle
 import codecs
-import progressBar
+from progressBar import printProgressBar
 
 # Dataset Download Link : https://www.kaggle.com/lievgarcia/amazon-reviews
 with codecs.open("amazon_dataset_1.csv", "r",encoding='utf-8', errors='ignore') as file_dat:
@@ -22,11 +22,12 @@ x = pd.DataFrame(x)
 
 import nltk
 
-sys.stdout = open(os.devnull, 'w')
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('maxent_treebank_pos_tagger')
-sys.stdout = sys.__stdout__
+nltk.download('averaged_perceptron_tagger')
+
+print("\n---------------------------------------------------------------------------------------\n")
 
 import re
 from nltk.corpus import stopwords
@@ -87,7 +88,7 @@ w, h = 2, len_dataset;
 pos_tag = [[0 for x in range(w)] for y in range(h)]
 num = 0
 
-print ("\nPerforming POS Tagging.")
+print ("\n\nPerforming POS Tagging.")
 for i in range(0,len_dataset):
 
     text = dataset['REVIEW_TEXT'][i]
@@ -240,7 +241,7 @@ X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 '''
 
-print ("Training Classifier on Bernoulli Naive Bayes.")
+print ("\n\nTraining Classifier on Bernoulli Naive Bayes.")
 from sklearn.naive_bayes import BernoulliNB
 
 classifier=BernoulliNB(alpha=1.0, binarize=0.0, fit_prior=True, class_prior=None)
@@ -254,7 +255,7 @@ from sklearn.metrics import accuracy_score
 print ("\nAccuracy of Bernoulli Naive Bayes is : ")
 print (accuracy_score(y_test, y_pred) * 100)
 
-print ("Training Classifier on Support Vector Machine.")
+print ("\n\nTraining Classifier on Support Vector Machine.")
 from sklearn.svm import SVC # "Support Vector Classifier"
 clf = SVC(kernel='rbf')
 # fitting x samples and y classes

@@ -123,6 +123,7 @@ def get_result(statement, rating, verified_purchase, product_category):
     return X
 
 if __name__ == '__main__':
+	print("\n---------------------------------------------------------------------------------------\n")
 	review_text = input("Enter your Review : ")
 	product_rating = input("Enter your Product Rating (On a scale of 1 to 5) : ")
 	verified_purchase = input("Enter if it's a Verified Purchase (Y or N) : ")

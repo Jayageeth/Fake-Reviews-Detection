@@ -6,15 +6,15 @@ import pickle
 import codecs
 from progressBar import printProgressBar
 
+#############################################################################################################
+# Read Dataset
+#############################################################################################################
+
 # Dataset Download Link : https://www.kaggle.com/lievgarcia/amazon-reviews
 with codecs.open("amazon_dataset_1.csv", "r",encoding='utf-8', errors='ignore') as file_dat:
      dataset = pd.read_csv(file_dat)
 
 len_dataset = math.floor(len(dataset)/1)
-
-#############################################################################################################
-# Create Independent Variable
-#############################################################################################################
 
 y=dataset.iloc[:,1:2].values
 

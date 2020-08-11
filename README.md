@@ -1,5 +1,13 @@
 # Fake-Reviews-Detection
 
+#### About
+
+This Repository contains code that will **Detect a Fake Review** on some online e-commerce site.
+
+We are using a corpus of **Amazon Dataset** present here : [https://www.kaggle.com/lievgarcia/amazon-reviews](https://www.kaggle.com/lievgarcia/amazon-reviews)
+
+---
+
 #### Requirements
 
 ###### 1. Python >= 3.6.1

@@ -12,13 +12,15 @@ with codecs.open("amazon_dataset_1.csv", "r",encoding='utf-8', errors='ignore') 
 
 len_dataset = math.floor(len(dataset)/1)
 
+#############################################################################################################
+# Create Independent Variable
+#############################################################################################################
+
 y=dataset.iloc[:,1:2].values
 
-'''
-x = np.array(dataset["RATING"])
-x = np.unique(x)
-x = pd.DataFrame(x)
-'''
+#############################################################################################################
+# Download nltk Libraries
+#############################################################################################################
 
 import nltk
 
@@ -36,6 +38,10 @@ from nltk.stem.porter import PorterStemmer
 corpus=[]
 num = 0
 
+#############################################################################################################
+# Tokenization and Stemming
+#############################################################################################################
+
 print ("\nPerforming Tokenization and Stemming.")
 for i in range(0, math.floor(len_dataset)):
     review=re.sub('[^a-zA-Z]',' ',dataset['REVIEW_TEXT'][i])
@@ -51,7 +57,10 @@ for i in range(0, math.floor(len_dataset)):
     printProgressBar(iteration = num, total = len_dataset, prefix = 'Progress:', suffix = 'Complete', length = 50)
     num = num + 1
 
-
+#############################################################################################################
+# Count Vectorization
+#############################################################################################################
+	
 from sklearn.feature_extraction.text import CountVectorizer
 cv=CountVectorizer(max_features=3000)
 X=cv.fit_transform(corpus).toarray()
@@ -60,6 +69,9 @@ y=dataset.iloc[:len_dataset,1]
 filename = 'countvectorizer.sav'
 pickle.dump(cv, open(filename, 'wb'))
 
+#############################################################################################################
+# POS Tagging
+#############################################################################################################
 
 def POS_Tagging(sentence):
     tagged_list = []
@@ -111,16 +123,15 @@ for i in range(0,len_dataset):
         #X[i].insert(1)
 X= np.append(X, pos_tag, axis=1)
 
-from sklearn import preprocessing
+#############################################################################################################
+# Label Encoding
+#############################################################################################################
 
-le = preprocessing.LabelEncoder()
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+
+le = LabelEncoder()
 y = le.fit_transform(y)
-
-
-
-
-
-
 
 w, h = 3, len_dataset;
 new_col = [[0 for x in range(w)] for y in range(h)]
@@ -144,9 +155,6 @@ for i in range(0, len_dataset):
 
 new_col = np.array(new_col)
 
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-
 labelEncoder = LabelEncoder()
 new_col[:, 0] = labelEncoder.fit_transform(new_col[:, 0])
 filename = 'labelencoder_1.sav'
@@ -160,18 +168,9 @@ new_col[:, 2] = labelEncoder.fit_transform(new_col[:, 2])
 filename = 'labelencoder_3.sav'
 pickle.dump(labelEncoder, open(filename, 'wb'))
 
-
-
-
-
-
-#####################################################################
-
-
-
-
-
-
+#############################################################################################################
+# OneHotEncoder / Column Transformer
+#############################################################################################################
 
 ct1 = ColumnTransformer([("Country", OneHotEncoder(), [0])], remainder = 'passthrough')
 new_col = ct1.fit_transform(new_col)
@@ -221,15 +220,11 @@ pickle.dump(onehotencoder, open(filename, 'wb'))
 
 new_col = new_col.astype(np.uint8)
 X = X.astype(np.uint8)
-
-
 X = np.append(X, new_col, axis=1).astype(np.uint8)
 
-
-
-
-
-
+#############################################################################################################
+# Split in Train and Test Set
+#############################################################################################################
 
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4, random_state = 0)
@@ -240,6 +235,10 @@ sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 '''
+
+#############################################################################################################
+# Training Classifiers
+#############################################################################################################
 
 print ("\n\nTraining Classifier on Bernoulli Naive Bayes.")
 from sklearn.naive_bayes import BernoulliNB

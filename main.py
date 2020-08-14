@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -5,6 +6,13 @@ import math
 import pickle
 import codecs
 from progressBar import printProgressBar
+import argparse
+
+force_retrain = 0
+parser = argparse.ArgumentParser()
+parser.add_argument('--force-retrain', help="Set value to 1 if you wish to retrain the models.")
+args = parser.parse_args()
+force_retrain = args.force_retrain
 
 #############################################################################################################
 # Read Dataset
@@ -43,7 +51,15 @@ num = 0
 #############################################################################################################
 
 print ("\nPerforming Tokenization and Stemming.")
+load_from_disk = False
 for i in range(0, math.floor(len_dataset)):
+    printProgressBar(iteration = num, total = len_dataset, prefix = 'Progress:', suffix = 'Complete', length = 50)
+    num = num + 1
+
+    if os.path.exists(os.path.join("models", "corpus.sav")) && force_retrain == 0 :
+        load_from_disk = True
+        continue
+
     review=re.sub('[^a-zA-Z]',' ',dataset['REVIEW_TEXT'][i])
     review=review.lower()
     review=review.split()
@@ -54,8 +70,12 @@ for i in range(0, math.floor(len_dataset)):
     review=' '.join(review)
     corpus.append(review)
 
-    printProgressBar(iteration = num, total = len_dataset, prefix = 'Progress:', suffix = 'Complete', length = 50)
-    num = num + 1
+filename = 'corpus.sav'
+if !os.path.exists(os.path.join("models", "corpus.sav")) :
+    pickle.dump(corpus, open(os.path.join("models", filename), 'wb'))
+
+if load_from_disk :
+    corpus = pickle.load(open(os.path.join("models", filename), 'rb'))
 
 #############################################################################################################
 # Count Vectorization
@@ -67,7 +87,7 @@ X=cv.fit_transform(corpus).toarray()
 y=dataset.iloc[:len_dataset,1]
 
 filename = 'countvectorizer.sav'
-pickle.dump(cv, open(filename, 'wb'))
+pickle.dump(cv, open(os.path.join("models", filename), 'wb'))
 
 #############################################################################################################
 # POS Tagging
@@ -100,16 +120,21 @@ w, h = 2, len_dataset;
 pos_tag = [[0 for x in range(w)] for y in range(h)]
 num = 0
 
+load_from_disk = False
+filename = 'pos_tag.sav'
 print ("\n\nPerforming POS Tagging.")
 for i in range(0,len_dataset):
-
-    text = dataset['REVIEW_TEXT'][i]
-    sentence=POS_Tagging(text)
-
     printProgressBar(iteration = num, total = len_dataset, prefix = 'Progress:', suffix = 'Complete', length = 50)
     num = num + 1
 
-    if sentence=='T':
+    if os.path.exists(os.path.join("models", filename)) && force_retrain == 0 :
+        load_from_disk = True
+        continue
+
+    text = dataset['REVIEW_TEXT'][i]
+    sentence = POS_Tagging(text)
+
+    if sentence == 'T':
         pos_tag[i][0] = 1
         pos_tag[i][1] = 0
         #X[i].insert(1)
@@ -121,7 +146,15 @@ for i in range(0,len_dataset):
     #print (pos_tag[i])
         #X[i].insert(0)
         #X[i].insert(1)
-X= np.append(X, pos_tag, axis=1)
+
+
+if !os.path.exists(os.path.join("models", filename)) :
+    pickle.dump(corpus, open(os.path.join("models", filename), 'wb'))
+
+if load_from_disk :
+    pos_tag = pickle.load(open(os.path.join("models", filename), 'rb'))
+
+X = np.append(X, pos_tag, axis = 1)
 
 #############################################################################################################
 # Label Encoding
@@ -158,15 +191,15 @@ new_col = np.array(new_col)
 labelEncoder = LabelEncoder()
 new_col[:, 0] = labelEncoder.fit_transform(new_col[:, 0])
 filename = 'labelencoder_1.sav'
-pickle.dump(labelEncoder, open(filename, 'wb'))
+pickle.dump(labelEncoder, open(os.path.join("models", filename), 'wb'))
 
 new_col[:, 1] = labelEncoder.fit_transform(new_col[:, 1])
 filename = 'labelencoder_2.sav'
-pickle.dump(labelEncoder, open(filename, 'wb'))
+pickle.dump(labelEncoder, open(os.path.join("models", filename), 'wb'))
 
 new_col[:, 2] = labelEncoder.fit_transform(new_col[:, 2])
 filename = 'labelencoder_3.sav'
-pickle.dump(labelEncoder, open(filename, 'wb'))
+pickle.dump(labelEncoder, open(os.path.join("models", filename), 'wb'))
 
 #############################################################################################################
 # OneHotEncoder / Column Transformer
@@ -176,26 +209,26 @@ ct1 = ColumnTransformer([("Country", OneHotEncoder(), [0])], remainder = 'passth
 new_col = ct1.fit_transform(new_col)
 new_col = new_col.astype(np.float32)
 filename = 'columntransformer1.sav'
-pickle.dump(ct1, open(filename, 'wb'))
+pickle.dump(ct1, open(os.path.join("models", filename), 'wb'))
 
 '''
 onehotencoder = OneHotEncoder(categorical_features = [0])
 new_col = onehotencoder.fit_transform(new_col).toarray()
 filename = 'onehotencoder1.sav'
-pickle.dump(onehotencoder, open(filename, 'wb'))
+pickle.dump(onehotencoder, open(os.path.join("models", filename), 'wb'))
 '''
 
 ct2 = ColumnTransformer([("Country", OneHotEncoder(), [5])], remainder = 'passthrough')
 new_col = ct2.fit_transform(new_col)
 new_col = new_col.astype(np.float32)
 filename = 'columntransformer2.sav'
-pickle.dump(ct2, open(filename, 'wb'))
+pickle.dump(ct2, open(os.path.join("models", filename), 'wb'))
 
 '''
 onehotencoder = OneHotEncoder(categorical_features = [5])
 new_col = onehotencoder.fit_transform(new_col).toarray()
 filename = 'onehotencoder2.sav'
-pickle.dump(onehotencoder, open(filename, 'wb'))
+pickle.dump(onehotencoder, open(os.path.join("models", filename), 'wb'))
 '''
 
 ct3 = ColumnTransformer([("Country", OneHotEncoder(), [7])], remainder = 'passthrough')
@@ -203,7 +236,7 @@ new_col = ct3.fit_transform(new_col)
 new_col = new_col.toarray()
 new_col = new_col.astype(np.float32)
 filename = 'columntransformer3.sav'
-pickle.dump(ct3, open(filename, 'wb'))
+pickle.dump(ct3, open(os.path.join("models", filename), 'wb'))
 
 '''
 print (X)
@@ -215,7 +248,7 @@ print (new_col.astype(int))
 onehotencoder = OneHotEncoder(categorical_features = [7])
 new_col = onehotencoder.fit_transform(new_col).toarray()
 filename = 'onehotencoder3.sav'
-pickle.dump(onehotencoder, open(filename, 'wb'))
+pickle.dump(onehotencoder, open(os.path.join("models", filename), 'wb'))
 '''
 
 new_col = new_col.astype(np.uint8)
@@ -248,7 +281,7 @@ classifier.fit(X_train,y_train)
 y_pred = classifier.predict(X_test)
 
 filename = 'bernoullinb.sav'
-pickle.dump(classifier, open(filename, 'wb'))
+pickle.dump(classifier, open(os.path.join("models", filename), 'wb'))
 
 from sklearn.metrics import accuracy_score
 print ("\nAccuracy of Bernoulli Naive Bayes is : ")
@@ -260,6 +293,9 @@ clf = SVC(kernel='rbf')
 # fitting x samples and y classes
 clf.fit(X_train, y_train)
 y_pred = clf.predict(X_test)
+
+filename = 'SVM.sav'
+pickle.dump(classifier, open(os.path.join("models", filename), 'wb'))
 
 from sklearn.metrics import accuracy_score
 print ("\nAccuracy of Support Vector Machine is : ")

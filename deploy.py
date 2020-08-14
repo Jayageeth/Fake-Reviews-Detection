@@ -1,5 +1,8 @@
 import os
+import re
 import pickle, nltk
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
@@ -9,20 +12,31 @@ nltk.download('stopwords')
 nltk.download('maxent_treebank_pos_tagger')
 nltk.download('averaged_perceptron_tagger')
 
+def clean_review(review):
+    review = re.sub('[^a-zA-Z]',' ', review)
+    review = review.lower()
+    review = review.split()
+    #print (review)
+    review = [word for word in review if not word in set(stopwords.words('english'))]
+    ps = PorterStemmer()
+    review = [ps.stem(word) for word in review if not word in set(stopwords.words('english'))]
+    review = ' '.join(review)
+    return review
+
 def countvectorize(statement):
-    countvectorizer = pickle.load(open("countvectorizer.sav", 'rb'))
+    countvectorizer = pickle.load(open(os.path.join("models", "countvectorizer.sav"), 'rb'))
     statement = countvectorizer.transform(statement).toarray()
     return statement
 
 
 def onehotencode(rating, verified_purchase, product_category, X):
-    labelencoder_1 = pickle.load(open("labelencoder_1.sav", 'rb'))
-    labelencoder_2 = pickle.load(open("labelencoder_2.sav", 'rb'))
-    labelencoder_3 = pickle.load(open("labelencoder_3.sav", 'rb'))
+    labelencoder_1 = pickle.load(open(os.path.join("models", "labelencoder_1.sav"), 'rb'))
+    labelencoder_2 = pickle.load(open(os.path.join("models", "labelencoder_2.sav"), 'rb'))
+    labelencoder_3 = pickle.load(open(os.path.join("models", "labelencoder_3.sav"), 'rb'))
 
-    ct1 = pickle.load(open("columntransformer1.sav", 'rb'))
-    ct2 = pickle.load(open("columntransformer2.sav", 'rb'))
-    ct3 = pickle.load(open("columntransformer3.sav", 'rb'))
+    ct1 = pickle.load(open(os.path.join("models", "columntransformer1.sav"), 'rb'))
+    ct2 = pickle.load(open(os.path.join("models", "columntransformer2.sav"), 'rb'))
+    ct3 = pickle.load(open(os.path.join("models", "columntransformer3.sav"), 'rb'))
 
     w, h = 3, 1;
     new_col = [[0 for x in range(w)] for y in range(h)]
@@ -32,13 +46,13 @@ def onehotencode(rating, verified_purchase, product_category, X):
         new_col[i][0] = rating
         new_col[i][1] = verified_purchase
         new_col[i][2] = product_category
-	
+
     new_col = np.array(new_col)
 
     new_col[:, 0] = labelencoder_1.transform(new_col[:, 0])
     new_col[:, 1] = labelencoder_2.transform(new_col[:, 1])
     new_col[:, 2] = labelencoder_3.transform(new_col[:, 2])
-	
+
     new_col = ct1.transform(new_col)
     try:
         new_col = new_col.toarray()
@@ -46,7 +60,7 @@ def onehotencode(rating, verified_purchase, product_category, X):
         #Do Nothing
         pass
     new_col = new_col.astype(np.float64)
-	
+
     new_col = ct2.transform(new_col)
     try:
         new_col = new_col.toarray()
@@ -54,7 +68,7 @@ def onehotencode(rating, verified_purchase, product_category, X):
         #Do Nothing
         pass
     new_col = new_col.astype(np.float64)
-	
+
     new_col = ct3.transform(new_col)
     try:
         new_col = new_col.toarray()
@@ -62,7 +76,7 @@ def onehotencode(rating, verified_purchase, product_category, X):
         #Do Nothing
         pass
     new_col = new_col.astype(np.float64)
-	
+
     X= np.append(X, new_col, axis=1)
     return X
 
@@ -109,16 +123,20 @@ def postag(sentence, X):
 
 
 def classify(X):
-    bernoullinb = pickle.load(open("bernoullinb.sav", 'rb'))
+    bernoullinb = pickle.load(open(os.path.join("models", "SVM.sav"), 'rb'))
     return bernoullinb.predict(X)
 
 def get_result(statement, rating, verified_purchase, product_category):
+    print (statement)
+    statement = clean_review(statement)
+    print ("##################")
+    print(statement)
     X = countvectorize([statement])
     X = postag(statement, X)
     X = onehotencode(rating, verified_purchase, product_category, X)
-	
+
     #print (X[0])
-	
+
     X = classify(X)
     return X
 

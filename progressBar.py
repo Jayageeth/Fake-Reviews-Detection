@@ -6,5 +6,5 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     #print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
     print("\r" + str(percent) + "% Completed.", end="")
     # Print New Line on Complete
-    if iteration == total: 
+    if iteration == total:
         print("\n")

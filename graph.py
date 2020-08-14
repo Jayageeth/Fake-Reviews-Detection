@@ -104,8 +104,8 @@ def plot2d(X, y, y_pred_bernoulli, y_pred_svc):
     plt.plot(X_pred_svc_blue, X_pred_svc_blue_points, c = 'green', linestyle = 'solid', label='SVC True Reviews Predicted')
 
     plt.legend()
-    plt.show()
-    
+    plt.show();
+
     plt.savefig(os.path.join('result', 'plot2d.png'))
 
 def plot_comp(y_test, y_pred_bernoulli, y_pred_svc) :

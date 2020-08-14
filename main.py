@@ -16,7 +16,7 @@ with codecs.open("amazon_dataset_1.csv", "r",encoding='utf-8', errors='ignore') 
 
 len_dataset = math.floor(len(dataset)/1)
 
-y=dataset.iloc[:,1:2].values
+y = dataset.iloc[:,1:2].values
 
 #############################################################################################################
 # Download nltk Libraries
@@ -60,7 +60,7 @@ for i in range(0, math.floor(len_dataset)):
 #############################################################################################################
 # Count Vectorization
 #############################################################################################################
-	
+
 from sklearn.feature_extraction.text import CountVectorizer
 cv=CountVectorizer(max_features=3000)
 X=cv.fit_transform(corpus).toarray()
@@ -144,13 +144,13 @@ for i in range(0, len_dataset):
     new_col[i][0] = dataset["RATING"][i]
     new_col[i][1] = dataset["VERIFIED_PURCHASE"][i]
     new_col[i][2] = dataset["PRODUCT_CATEGORY"][i]
-    
+
     if new_col[i][2] not in test.keys() :
         test[new_col[i][2]] = 1
         test_num = test_num + 1
-        
+
         #print (new_col[i][2])
-        
+
 #print (test_num)
 
 new_col = np.array(new_col)

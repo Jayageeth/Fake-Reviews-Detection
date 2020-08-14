@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 import math
 import pickle
@@ -8,11 +7,12 @@ import codecs
 from progressBar import printProgressBar
 import argparse
 
-force_retrain = 0
 parser = argparse.ArgumentParser()
 parser.add_argument('--force-retrain', help="Set value to 1 if you wish to retrain the models.")
+parser.add_argument('--debug', help="Debug.")
 args = parser.parse_args()
 force_retrain = args.force_retrain
+debug = args.debug
 
 #############################################################################################################
 # Read Dataset
@@ -43,35 +43,37 @@ import re
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-corpus=[]
-num = 0
-
 #############################################################################################################
 # Tokenization and Stemming
 #############################################################################################################
 
 print ("\nPerforming Tokenization and Stemming.")
 load_from_disk = False
-for i in range(0, math.floor(len_dataset)):
-    printProgressBar(iteration = num, total = len_dataset, prefix = 'Progress:', suffix = 'Complete', length = 50)
-    num = num + 1
+corpus=[]
+num = 0
 
-    if os.path.exists(os.path.join("models", "corpus.sav")) && force_retrain == 0 :
+for i in range(0, math.floor(len_dataset)) :
+    if not debug :
+        printProgressBar(iteration = num, total = len_dataset, prefix = 'Progress:', suffix = 'Complete', length = 50)
+        num = num + 1
+
+    if os.path.exists(os.path.join("models", "corpus.sav")) and force_retrain == None :
         load_from_disk = True
         continue
 
-    review=re.sub('[^a-zA-Z]',' ',dataset['REVIEW_TEXT'][i])
-    review=review.lower()
-    review=review.split()
+
+    review = re.sub('[^a-zA-Z]',' ',dataset['REVIEW_TEXT'][i])
+    review = review.lower()
+    review = review.split()
     #print (review)
-    review=[word for word in review if not word in set(stopwords.words('english'))]
-    ps=PorterStemmer()
-    review=[ps.stem(word) for word in review if not word in set(stopwords.words('english'))]
-    review=' '.join(review)
+    review = [word for word in review if not word in set(stopwords.words('english'))]
+    ps = PorterStemmer()
+    review = [ps.stem(word) for word in review if not word in set(stopwords.words('english'))]
+    review = ' '.join(review)
     corpus.append(review)
 
 filename = 'corpus.sav'
-if !os.path.exists(os.path.join("models", "corpus.sav")) :
+if load_from_disk == False :
     pickle.dump(corpus, open(os.path.join("models", filename), 'wb'))
 
 if load_from_disk :
@@ -124,10 +126,11 @@ load_from_disk = False
 filename = 'pos_tag.sav'
 print ("\n\nPerforming POS Tagging.")
 for i in range(0,len_dataset):
-    printProgressBar(iteration = num, total = len_dataset, prefix = 'Progress:', suffix = 'Complete', length = 50)
-    num = num + 1
+    if not debug :
+        printProgressBar(iteration = num, total = len_dataset, prefix = 'Progress:', suffix = 'Complete', length = 50)
+        num = num + 1
 
-    if os.path.exists(os.path.join("models", filename)) && force_retrain == 0 :
+    if os.path.exists(os.path.join("models", filename)) and force_retrain == None :
         load_from_disk = True
         continue
 
@@ -148,8 +151,8 @@ for i in range(0,len_dataset):
         #X[i].insert(1)
 
 
-if !os.path.exists(os.path.join("models", filename)) :
-    pickle.dump(corpus, open(os.path.join("models", filename), 'wb'))
+if load_from_disk == False :
+    pickle.dump(pos_tag, open(os.path.join("models", filename), 'wb'))
 
 if load_from_disk :
     pos_tag = pickle.load(open(os.path.join("models", filename), 'rb'))
@@ -260,7 +263,7 @@ X = np.append(X, new_col, axis=1).astype(np.uint8)
 #############################################################################################################
 
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.4, random_state = 0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 1)
 
 '''
 from sklearn.preprocessing import StandardScaler
@@ -274,29 +277,60 @@ X_test = sc.transform(X_test)
 #############################################################################################################
 
 print ("\n\nTraining Classifier on Bernoulli Naive Bayes.")
+
 from sklearn.naive_bayes import BernoulliNB
 
-classifier=BernoulliNB(alpha=1.0, binarize=0.0, fit_prior=True, class_prior=None)
-classifier.fit(X_train,y_train)
-y_pred = classifier.predict(X_test)
+bernoullinb = None
+if os.path.exists(os.path.join("models", "bernoullinb.sav")) and force_retrain == None:
+    bernoullinb = pickle.load(open(os.path.join("models", "bernoullinb.sav"), "rb"))
 
-filename = 'bernoullinb.sav'
-pickle.dump(classifier, open(os.path.join("models", filename), 'wb'))
+else :
+    bernoullinb = BernoulliNB(alpha = 1.0, binarize = 0.0, fit_prior = True, class_prior = None)
+    bernoullinb.fit(X_train,y_train)
+
+    filename = 'bernoullinb.sav'
+    pickle.dump(bernoullinb, open(os.path.join("models", filename), 'wb'))
+
+print("Done.")
+
+y_pred_bernoulli = bernoullinb.predict(X_test)
 
 from sklearn.metrics import accuracy_score
 print ("\nAccuracy of Bernoulli Naive Bayes is : ")
-print (accuracy_score(y_test, y_pred) * 100)
+print (accuracy_score(y_test, y_pred_bernoulli) * 100)
 
 print ("\n\nTraining Classifier on Support Vector Machine.")
 from sklearn.svm import SVC # "Support Vector Classifier"
-clf = SVC(kernel='rbf')
-# fitting x samples and y classes
-clf.fit(X_train, y_train)
-y_pred = clf.predict(X_test)
 
-filename = 'SVM.sav'
-pickle.dump(classifier, open(os.path.join("models", filename), 'wb'))
+clf = None
+
+if os.path.exists(os.path.join("models", "SVM.sav")) and force_retrain == None:
+    clf = pickle.load(open(os.path.join("models", "SVM.sav"), "rb"))
+    y_pred_svc = pickle.load(open(os.path.join("models", "SVM_y_pred.sav"), "rb"))
+
+else :
+    clf = SVC(kernel='rbf')
+    clf.fit(X_train, y_train)
+
+    filename = 'SVM.sav'
+    pickle.dump(clf, open(os.path.join("models", filename), 'wb'))
+
+    y_pred_svc = clf.predict(X_test)
+    pickle.dump(y_pred_svc, open(os.path.join("models", "SVM_y_pred.sav"), 'wb'))
+
+print("Done.")
 
 from sklearn.metrics import accuracy_score
 print ("\nAccuracy of Support Vector Machine is : ")
-print(accuracy_score(y_test, y_pred) * 100)
+print(accuracy_score(y_test, y_pred_svc) * 100)
+
+#############################################################################################################
+# Plot Graphs
+#############################################################################################################
+
+from graph import plot_comp
+
+X = np.concatenate((X_train, X_test))
+y = np.concatenate((y_train, y_test))
+
+#plot_comp(y_test, y_pred_bernoulli, y_pred_svc)

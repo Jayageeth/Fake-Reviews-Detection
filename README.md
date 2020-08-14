@@ -54,8 +54,12 @@ pip install -r requirements.txt
 
 #### Train the models
 
+##### There is already a folder called "models" where all the trained models are present.
+
+##### However, if you wanna retrain models, you can run the following command :
+
 ```
-python main.py
+python main.py --force-retrain 1
 ```
 
 #### Test the trained models

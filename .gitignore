@@ -1,3 +1,6 @@
 venv
 #*.sav
+*models_*
 __pycache__
+*.rar
+test*

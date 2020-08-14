@@ -6,6 +6,15 @@ This Repository contains code that will **Detect a Fake Review** on some online 
 
 We are using a corpus of **Amazon Dataset** present here : [https://www.kaggle.com/lievgarcia/amazon-reviews](https://www.kaggle.com/lievgarcia/amazon-reviews)
 
+#### How to clone the Repository **with models**
+
+The model files are large in size, and you **cannot** get those with a simple git clone.
+You need to use **git lfs** for that
+
+```
+git lfs clone https://github.com/Shraeyas/Fake-Reviews-Detection
+```
+
 ---
 
 #### Requirements
@@ -85,4 +94,3 @@ python server.py
 #### Aight.
 
 #### Cya.
-

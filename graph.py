@@ -4,7 +4,7 @@ from itertools import *
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
-def plot3d(X, y, clf) :
+def plot3d(X, y) :
     fig = plt.figure()
     ax = fig.add_subplot(111, projection = '3d')
 
@@ -38,7 +38,7 @@ def plot3d(X, y, clf) :
     ax.scatter(xs_blue, ys_blue, zs_blue, c = 'blue', marker = '.', alpha = 0.5)
     plt.show()
 
-def plot2d(X, y, clf):
+def plot2d(X, y, y_pred_bernoulli, y_pred_svc):
     pca = PCA(n_components=1, whiten=True).fit(X)
     X_pca = pca.transform(X)
 
@@ -50,10 +50,23 @@ def plot2d(X, y, clf):
     X_axis_blue = []
     X_axis_blue_points = []
 
-    for i in range (0, 21000) :
-        if i % 100 != 0 :
+    X_pred_bernoulli_red = []
+    X_pred_bernoulli_red_points = []
+
+    X_pred_bernoulli_blue = []
+    X_pred_bernoulli_blue_points = []
+
+    X_pred_svc_red = []
+    X_pred_svc_red_points = []
+
+    X_pred_svc_blue = []
+    X_pred_svc_blue_points = []
+
+    for i in range (0, len(y)) :
+        if i % 25 != 0 :
             continue
 
+        #Original
         if y[i] == 0 :
             X_axis_red.append(i)
             X_axis_red_points.append(X_pca[i])
@@ -62,8 +75,32 @@ def plot2d(X, y, clf):
             X_axis_blue.append(i)
             X_axis_blue_points.append(X_pca[i])
 
-    plt.scatter(X_axis_red, X_axis_red_points, marker = '.', c = 'coral', alpha = 0.5)
-    plt.scatter(X_axis_blue, X_axis_blue_points, marker = '.', c = 'lightblue', alpha = 0.5)
+        #Bernoulli
+        if y_pred_bernoulli[i] == 0 :
+            X_pred_bernoulli_red.append(i)
+            X_pred_bernoulli_red_points.append(X_pca[i])
+
+        else :
+            X_pred_bernoulli_blue.append(i)
+            X_pred_bernoulli_blue_points.append(X_pca[i])
+
+        #SVC
+        if y_pred_svc[i] == 0 :
+            X_pred_svc_red.append(i)
+            X_pred_svc_red_points.append(X_pca[i])
+
+        else :
+            X_pred_svc_blue.append(i)
+            X_pred_svc_blue_points.append(X_pca[i])
+
+    plt.plot(X_axis_red, X_axis_red_points, c = 'red', linestyle = 'dashed', label='Fake Reviews Originally')
+    plt.plot(X_axis_blue, X_axis_blue_points, c = 'red', linestyle = 'solid', label='True Reviews Originally')
+
+    plt.plot(X_pred_bernoulli_red, X_pred_bernoulli_red_points, c = 'blue', linestyle = 'dashed', label='Bernoulli Fake Reviews Predicted')
+    plt.plot(X_pred_bernoulli_blue, X_pred_bernoulli_blue_points, c = 'blue', linestyle = 'solid', label='Bernoulli True Reviews Predicted')
+
+    plt.plot(X_pred_svc_red, X_pred_svc_red_points, c = 'green', linestyle = 'dashed', label='SVC Fake Reviews Predicted')
+    plt.plot(X_pred_svc_blue, X_pred_svc_blue_points, c = 'green', linestyle = 'solid', label='SVC True Reviews Predicted')
 
     plt.legend()
     plt.show()
@@ -96,9 +133,9 @@ def plot_comp(y_test, y_pred_bernoulli, y_pred_svc) :
                 X_axis_blue_points.append(X_pca[i])
             '''
 
-        plt.scatter(X_axis, y_test_plot, marker = '.', c = 'blue', alpha = 0.5)
-        plt.scatter(X_axis, y_pred_bernoulli_plot, marker = '.', c = 'red', alpha = 0.5)
-        plt.scatter(X_axis, y_pred_svc_plot, marker = '.', c = 'green', alpha = 0.5)
+        plt.plot(X_axis, y_test_plot, marker = '.', c = 'blue')
+        plt.plot(X_axis, y_pred_bernoulli_plot, marker = '.', c = 'red')
+        plt.plot(X_axis, y_pred_svc_plot, marker = '.', c = 'green')
 
         plt.legend()
         plt.show()

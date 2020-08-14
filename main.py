@@ -328,9 +328,9 @@ print(accuracy_score(y_test, y_pred_svc) * 100)
 # Plot Graphs
 #############################################################################################################
 
-from graph import plot_comp
+from graph import plot2d, plot_comp
 
 X = np.concatenate((X_train, X_test))
 y = np.concatenate((y_train, y_test))
 
-#plot_comp(y_test, y_pred_bernoulli, y_pred_svc)
+plot2d(X_test, y_test, y_pred_bernoulli, y_pred_svc)

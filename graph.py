@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from itertools import *
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+import os
 
 def plot3d(X, y) :
     fig = plt.figure()
@@ -104,6 +105,8 @@ def plot2d(X, y, y_pred_bernoulli, y_pred_svc):
 
     plt.legend()
     plt.show()
+    
+    plt.savefig(os.path.join('result', 'plot2d.png'))
 
 def plot_comp(y_test, y_pred_bernoulli, y_pred_svc) :
         plt.figure()

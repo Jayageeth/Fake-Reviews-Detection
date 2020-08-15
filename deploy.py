@@ -127,10 +127,12 @@ def classify(X):
     return bernoullinb.predict(X)
 
 def get_result(statement, rating, verified_purchase, product_category):
+    '''
     print (statement)
     statement = clean_review(statement)
     print ("##################")
     print(statement)
+    '''
     X = countvectorize([statement])
     X = postag(statement, X)
     X = onehotencode(rating, verified_purchase, product_category, X)

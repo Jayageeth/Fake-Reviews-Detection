@@ -123,16 +123,10 @@ def postag(sentence, X):
 
 
 def classify(X):
-    bernoullinb = pickle.load(open(os.path.join("models", "SVM.sav"), 'rb'))
+    bernoullinb = pickle.load(open(os.path.join("models", "bernoullinb.sav"), 'rb'))
     return bernoullinb.predict(X)
 
 def get_result(statement, rating, verified_purchase, product_category):
-    '''
-    print (statement)
-    statement = clean_review(statement)
-    print ("##################")
-    print(statement)
-    '''
     X = countvectorize([statement])
     X = postag(statement, X)
     X = onehotencode(rating, verified_purchase, product_category, X)

@@ -12,6 +12,11 @@ nltk.download('stopwords')
 nltk.download('maxent_treebank_pos_tagger')
 nltk.download('averaged_perceptron_tagger')
 
+categories = ["Apparel", "Automotive", "Baby", "Beauty", "Books", "Camera", "Electronics", "Furniture", "Grocery", "Health & Personal Care", "Home", "Home Entertainment", "Home Improvement", "Jewelry", "Kitchen", "Lawn and Garden", "Luggage", "Musical Instruments", "Office Products", "Outdoors", "PC", "Pet Products", "Shoes", "Sports", "Tools", "Toys", "Video DVD", "Video Games", "Watches", "Wireless"]
+categories_str = "Apparel"
+for i in range (1, len(categories)) :
+    categories_str += ", " + categories[i]
+
 def clean_review(review):
     review = re.sub('[^a-zA-Z]',' ', review)
     review = review.lower()
@@ -131,22 +136,68 @@ def get_result(statement, rating, verified_purchase, product_category):
     X = postag(statement, X)
     X = onehotencode(rating, verified_purchase, product_category, X)
 
-    #print (X[0])
-
     X = classify(X)
     return X
 
+def test_input(product_rating, verified_purchase, product_category) :
+    x = True
+    y = True
+    z = True
+
+    if product_rating != '1' and product_rating != '2' and product_rating != '3' and product_rating != '4' and product_rating != '5' :
+        print ("--------------------------------------------------------------------------------------.")
+        print ("\nError : Product Rating must be Between 1 and 5 (inclusive).")
+        print ("\nPlease Try Again.")
+
+        x = False
+
+    if verified_purchase != 'Y' and verified_purchase != 'N' :
+        print ("--------------------------------------------------------------------------------------.")
+        print ("\nError : Verified Purchase must be either Y (Yes) or N (No).")
+        print ("\nPlease Try Again.")
+
+        y = False
+
+    if product_category not in categories:
+        print ("--------------------------------------------------------------------------------------.")
+        print ("\nError : Product Category must be among these choices : \n" + categories_str)
+        print ("\nPlease Try Again.")
+
+        z = False
+
+    return [x, y, z]
+
 if __name__ == '__main__':
-	print("\n---------------------------------------------------------------------------------------\n")
-	review_text = input("Enter your Review : ")
-	product_rating = input("Enter your Product Rating (On a scale of 1 to 5) : ")
-	verified_purchase = input("Enter if it's a Verified Purchase (Y or N) : ")
-	product_category = input("Enter your Product Category (Apparel, Clothing or Shoes) : ")
 
-	answer = get_result(review_text, product_rating, verified_purchase, product_category)
+    review_text = input("\nEnter your Review : ")
 
-	if answer == 1:
-		print ("It is a True Review")
+    product_rating = ""
+    verified_purchase = ""
+    product_category = ""
 
-	else:
-		print ("It is a False Review")
+    input_ar = [False, False, False]
+
+    while (True) :
+        print("\n---------------------------------------------------------------------------------------\n")
+
+        if not input_ar[0] :
+            product_rating = input("\nEnter your Product Rating (On a scale of 1 to 5) : ")
+
+        if not input_ar[1] :
+            verified_purchase = input("\nEnter if it's a Verified Purchase (Y or N) : ")
+
+        if not input_ar[2] :
+            product_category = input("\nEnter your Product Category (" + categories_str + ") : ")
+
+        input_ar = test_input(product_rating, verified_purchase, product_category)
+
+        if input_ar == [True, True, True] :
+            break
+
+    answer = get_result(review_text, product_rating, verified_purchase, product_category)
+
+    if answer == 1:
+        print ("It is a True Review")
+
+    else:
+        print ("It is a False Review")

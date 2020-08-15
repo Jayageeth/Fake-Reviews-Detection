@@ -5,3 +5,5 @@ __pycache__
 *.rar
 test*
 models
+.ipynb_checkpoints
+0.*

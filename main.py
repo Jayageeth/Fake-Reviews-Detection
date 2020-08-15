@@ -6,6 +6,7 @@ import pickle
 import codecs
 from progressBar import printProgressBar
 import argparse
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--force-retrain', help="Set value to 1 if you wish to retrain the models.")
@@ -13,6 +14,12 @@ parser.add_argument('--debug', help="Debug.")
 args = parser.parse_args()
 force_retrain = args.force_retrain
 debug = args.debug
+
+try :
+    shutil.unpack_archive("models.zip", "models", "zip")
+
+except :
+    pass
 
 #############################################################################################################
 # Read Dataset
@@ -319,6 +326,8 @@ else :
     pickle.dump(y_pred_svc, open(os.path.join("models", "SVM_y_pred.sav"), 'wb'))
 
 print("Done.")
+
+shutil.make_archive("models", 'zip', "models")
 
 from sklearn.metrics import accuracy_score
 print ("\nAccuracy of Support Vector Machine is : ")
